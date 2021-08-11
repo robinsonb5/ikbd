@@ -245,6 +245,9 @@ end
    reg  	  mouse_z_up;
    reg  	  mouse_z_down;
    reg [9:0] 	  mouse_ev_cnt;
+	reg [4:0] mouse_idle;
+	reg [2:0] mouse_badpackets;
+	reg mouse_protocol;
 
 assign mouse_atari = { mouse_btn, mouse_y_cnt, mouse_x_cnt };   
       
@@ -272,6 +275,8 @@ always @(posedge clk) begin
       mouse_ev_cnt <= 10'd0;
       mouse_z_up <= 1'b0;
       mouse_z_down <= 1'b0;
+		mouse_badpackets <= 3'b0;
+		mouse_protocol <= 1'b0;
 
    end else begin
 
@@ -284,6 +289,17 @@ always @(posedge clk) begin
       // velocities up to 10 inches per second."
       mouse_ev_cnt <= mouse_ev_cnt + 10'd1;
       if(mouse_ev_cnt == 10'd0) begin
+		
+		// Idle counter to resync PS/2 packets
+			if(mouse_idle[4]) begin
+				if(|mouse_state) begin
+					mouse_protocol<=~mouse_protocol;
+					mouse_z<=9'd0; // Clear any bad wheel data
+				end
+				mouse_state<=2'b0;
+			end else
+				mouse_idle<=mouse_idle+1'b1;
+
 	 // x direction
 	 if(mouse_x[8]) begin
 	    // mouse_x is lower than 0
@@ -332,6 +348,7 @@ always @(posedge clk) begin
       mouse_last_clk <= mouse_clk;
             
       if (!mouse_clk && mouse_last_clk) begin
+			mouse_idle<=5'b0;
 	 
          //  We have a new bit from the keyboard for processing
          if (mouse_bit_cnt === 0) begin
@@ -366,7 +383,7 @@ always @(posedge clk) begin
 		     mouse_state <= 2'd2;		     		       
 		  end else if(mouse_state == 2'd2) begin
 		     mouse_y <= ~{ mouse_sign[1], mouse_sr[7:0] } + 1'd1;
-		     mouse_state <= 2'd3;
+		     mouse_state <= mouse_protocol ? 2'd0 : 2'd3;
 		  end else begin
 		     mouse_z <= {~{ mouse_sr[4:0] } + 1'd1, 4'h0};
 		     mouse_state <= 2'd0;		     		       
