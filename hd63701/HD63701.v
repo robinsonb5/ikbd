@@ -174,7 +174,8 @@ module HD63701_IOPort
    reg [7:0] 	  PO3R;   
    reg [7:0] 	  PO4R;
   
-always @( posedge mcu_clx2 or posedge mcu_rst ) begin
+//always @( posedge mcu_clx2 or posedge mcu_rst ) begin
+always @( posedge mcu_clx2) begin // AMR - sync resets to match top
    if (mcu_rst) begin
       DDR1 <= 8'h00;
       DDR2 <= 5'h00;      
@@ -248,7 +249,8 @@ module HD63701_SCI
    reg        clr_rd;
    reg        clr_td;
       
-   always @( posedge mcu_clx2 or posedge mcu_rst ) begin
+//   always @( posedge mcu_clx2 or posedge mcu_rst ) begin
+   always @( posedge mcu_clx2 ) begin // AMR - sync resets to match top
       if (mcu_rst) begin
 	 RMCR  <= 8'h00;
 	 TRCSR <= 8'h00;
@@ -385,8 +387,9 @@ reg [16:0] frc;
 reg  [7:0] frt;
 reg  [7:0] rmc;
 
-always @( posedge mcu_clx2 or posedge mcu_rst ) begin
-	if (mcu_rst) begin
+always @( posedge mcu_clx2) begin
+//always @( posedge mcu_clx2 or posedge mcu_rst ) begin
+	if (mcu_rst) begin // AMR - sync resets to match top
 		oce <= 0;
 		ocr <= 16'hFFFF;
 		icr <= 16'hFFFF;
@@ -412,7 +415,8 @@ always @( posedge mcu_clx2 or posedge mcu_rst ) begin
 	end
 end
 
-always @( negedge mcu_clx2 or posedge mcu_rst ) begin
+//always @( negedge mcu_clx2 or posedge mcu_rst ) begin
+always @( negedge mcu_clx2) begin // AMR - sync resets to match top
 	if (mcu_rst) begin
 		oci <= 1'b0;
 	end

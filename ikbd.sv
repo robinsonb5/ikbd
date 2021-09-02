@@ -59,7 +59,7 @@ module ikbd (
 
    // detect mouse and joystick activity
    always @(posedge clk) begin
-      if(res) begin
+      if(res) begin	// Must be sync reset, since reset value isn't constant.
 	 last_joystick0 <= joystick0;
 	 last_mouse_atari <= mouse_atari;
 	 mouse_active <= 1'b1;	 
